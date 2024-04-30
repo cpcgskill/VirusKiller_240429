@@ -23,6 +23,10 @@ def clear_virus():
     kill.kill_virus()
 
 
+def alone_clear_hik_virus():
+    kill.kill_hik()
+
+
 def restore_UAC():
     subprocess.Popen(
         ['powershell', os.path.join(os.path.dirname(__file__), 'restore_UAC.ps1')],
@@ -95,6 +99,7 @@ def create_gui():
     cmds.columnLayout(adjustableColumn=True)
 
     cmds.button(label='清除病毒本体', command=lambda *args: clear_virus())
+    cmds.button(label='单独清除HIK病毒', command=lambda *args: alone_clear_hik_virus())
     cmds.button(label='恢复UAC设置', command=lambda *args: restore_UAC())
     cmds.button(label='清除病毒脚本节点', command=lambda *args: clear_virus_script_node())
     cmds.button(label='批量清理Maya文件', command=lambda *args: batch_clear_maya_file())

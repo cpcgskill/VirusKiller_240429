@@ -14,7 +14,32 @@ import os
 import re
 import shutil
 import maya.cmds as cmds
-import base64;
+import base64
+
+
+def kill_hik():
+    hik_mel_list = [
+        os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/zh_CN/plug-ins/mayaHIK.pres.mel'),
+        os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/ja_JP/plug-ins/mayaHIK.pres.mel'),
+    ]
+    hik_regex = r'python\(\"import base64;\s*pyCode\s*=\s*base64\.urlsafe_b64decode\([\'\"].*?[\"\']\);\s*exec\s*\(\s*pyCode\s*\)\"\)\s*;'
+    hik_mel_list = [i.replace('\\', '/') for i in hik_mel_list if os.path.isfile(i)]
+    if len(hik_mel_list) > 0:
+        cmds.warning('开始清理mayaHIK.pres.mel中的病毒代码')
+        for hik_mel in hik_mel_list:
+            with open(hik_mel, 'rb') as f:
+                data = f.read()
+
+            if len(re.findall(hik_regex, data)) > 0:
+                cmds.warning('正在清理"{}"文件中的病毒代码'.format(hik_mel))
+                with open(hik_mel, 'wb') as f:
+                    f.write(re.sub(hik_regex, '', data, ))
+                cmds.warning('"{}"文件中病毒代码已清除'.format(hik_mel))
+            else:
+                cmds.warning('"{}"文件中未发现病毒代码'.format(hik_mel))
+        cmds.warning('mayaHIK.pres.mel中的病毒代码清理完成')
+    else:
+        cmds.warning('未发现mayaHIK.pres.mel文件')
 
 
 def kill_virus():
@@ -51,25 +76,6 @@ def kill_virus():
                 cmds.warning('病毒本体清理完成')
             else:
                 cmds.warning('病毒路径不存在')
-
-        cmds.warning('开始清理mayaHIK.pres.mel中的病毒代码')
-        hik_mel_list = [
-            os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/zh_CN/plug-ins/mayaHIK.pres.mel'),
-            os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/ja_JP/plug-ins/mayaHIK.pres.mel'),
-        ]
-        hik_regex = r'python\(\"import base64;\s*pyCode\s*=\s*base64\.urlsafe_b64decode\([\'\"].*?[\"\']\);\s*exec\s*\(\s*pyCode\s*\)\"\)\s*;'
-        for hik_mel in hik_mel_list:
-            hik_mel = hik_mel.replace('\\', '/')
-            with open(hik_mel, 'rb') as f:
-                data = f.read()
-
-            if len(re.findall(hik_regex, data)) > 0:
-                cmds.warning('正在清理"{}"文件中的病毒代码'.format(hik_mel))
-                with open(hik_mel, 'wb') as f:
-                    f.write(re.sub(hik_regex, '', data, ))
-                cmds.warning('"{}"文件中病毒代码已清除'.format(hik_mel))
-            else:
-                cmds.warning('"{}"文件中未发现病毒代码'.format(hik_mel))
-        cmds.warning('mayaHIK.pres.mel中的病毒代码清理完成')
+        kill_hik()
     else:
         cmds.warning('你的Maya好像没有被感染')
