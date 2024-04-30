@@ -1,0 +1,16 @@
+global proc string[] EEgetCurrTypeList(string $currType)
+    {
+    	string $nodeList[];
+    	switch($currType)
+    	{
+    		case "scriptNode":	$nodeList = `ls -type script`;
+    							int $Num,$Chk=0;
+    							for($Num=0;$Num<size($nodeList);){
+    								if(`attributeExists KGMScriptProtector $nodeList[$Num]`&&$Chk==0){$nodeList[$Num]=" ";$Chk=1;}
+    								else if(`attributeExists KGMScriptProtector $nodeList[$Num]`&&$Chk==1){$nodeList[$Num]=" ";};
+    								$Num++;
+    							};
+    							break;
+    	}
+    	return $nodeList;
+    }

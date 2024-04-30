@@ -1,0 +1,5 @@
+{
+  "type": "maya-plugin", 
+  "exec_script": "import gui; gui.create_gui()",
+  "name": "VirusKiller_240429"
+}
