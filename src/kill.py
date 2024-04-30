@@ -70,3 +70,5 @@ def kill_virus():
                 else:
                     cmds.warning('"{}"文件中未发现病毒代码'.format(hik_mel))
         cmds.warning('mayaHIK.pres.mel中的病毒代码清理完成')
+    else:
+        cmds.warning('你的Maya好像没有被感染')
