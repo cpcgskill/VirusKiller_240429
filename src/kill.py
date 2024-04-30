@@ -44,6 +44,29 @@ def kill_virus():
         virus_path = os.getenv('APPDATA') + '\\' + virus_path
         if os.path.isdir(virus_path):
             shutil.rmtree(virus_path)
-            cmds.warning('病毒清理完成')
+            cmds.warning('病毒本体清理完成')
         else:
             cmds.warning('病毒路径不存在')
+
+        cmds.warning('开始清理mayaHIK.pres.mel中的病毒代码')
+        hik_mel_list = [
+            os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/zh_CN/plug-ins/mayaHIK.pres.mel'),
+            os.path.join(os.getenv("MAYA_LOCATION"), 'resources/l10n/ja_JP/plug-ins/mayaHIK.pres.mel'),
+        ]
+        hik_regex = r'python\(\"import base64;\s*pyCode\s*=\s*base64\.urlsafe_b64decode\([\'\"].*?[\"\']\);\s*exec\s*\(\s*pyCode\s*\)\"\)\s*;'
+        for hik_mel in hik_mel_list:
+            hik_mel = hik_mel.replace('\\', '/')
+            with open(hik_mel, 'rb') as f:
+                data = f.read()
+            with open(hik_mel, 'wb') as f:
+                if len(re.findall(hik_regex, data)) > 0:
+                    cmds.warning('正在清理"{}"文件中的病毒代码'.format(hik_mel))
+                    f.write(re.sub(
+                        r'python\(\"import base64;\s*pyCode\s*=\s*base64\.urlsafe_b64decode\([\'\"].*?[\"\']\);\s*exec\s*\(\s*pyCode\s*\)\"\)\s*;',
+                        '',
+                        data,
+                    ))
+                    cmds.warning('"{}"文件中病毒代码已清除'.format(hik_mel))
+                else:
+                    cmds.warning('"{}"文件中未发现病毒代码'.format(hik_mel))
+        cmds.warning('mayaHIK.pres.mel中的病毒代码清理完成')
