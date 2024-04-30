@@ -15,6 +15,7 @@ if False:
 
 import maya.cmds as cmds
 import kill
+import kill_mayafile
 import subprocess
 
 
@@ -45,7 +46,42 @@ def clear_virus_script_node():
     else:
         cmds.warning('未发现病毒脚本节点')
 
-# 从上到下三个按钮
+
+def batch_clear_maya_file():
+    """
+    批量清理Maya文件.
+    """
+    # 弹窗警告
+    result = cmds.confirmDialog(
+        title='警告',
+        message='正则批量清理Maya文件, 可能会导致文件损坏, 请注意备份',
+        button=['Ok', 'Cancel'],
+        defaultButton='Cancel',
+        cancelButton='Cancel',
+        dismissString='Cancel',
+    )
+    if result == 'Cancel':
+        cmds.warning('已取消')
+        return
+
+    #
+    cmds.warning('开始批量处理...')
+    files = cmds.fileDialog2(fileMode=4, dialogStyle=2)
+    if not files:
+        cmds.warning('未选择文件')
+        return
+    for file in files:
+        try:
+            kill_mayafile.process_file(os.path.abspath(file))
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            cmds.warning('处理文件{}失败: {}'.format(file, e))
+        else:
+            cmds.warning('处理文件{}成功'.format(file))
+    cmds.warning('批量处理完成')
+
+
 def create_gui():
     # type: () -> None
     """
@@ -61,6 +97,7 @@ def create_gui():
     cmds.button(label='清除病毒本体', command=lambda *args: clear_virus())
     cmds.button(label='恢复UAC设置', command=lambda *args: restore_UAC())
     cmds.button(label='清除病毒脚本节点', command=lambda *args: clear_virus_script_node())
+    cmds.button(label='批量清理Maya文件', command=lambda *args: batch_clear_maya_file())
 
     cmds.showWindow('VirusKiller_240429')
 
