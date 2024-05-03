@@ -13,6 +13,7 @@ import re
 if False:
     from typing import *
 
+import json
 import maya.cmds as cmds
 import kill
 import kill_mayafile
@@ -86,6 +87,49 @@ def batch_clear_maya_file():
     cmds.warning('批量处理完成')
 
 
+def batch_check_maya_file():
+    """
+    批量检查Maya文件.
+    """
+    # 是否启用谨慎模式
+    result = cmds.confirmDialog(
+        title='警告',
+        message='是否启用谨慎模式, 谨慎模式会检查文件中是否存在病毒代码, 但可能会误报',
+        button=['Yes', 'No'],
+        defaultButton='No',
+        cancelButton='No',
+        dismissString='No',
+    )
+
+    is_cautious = result == 'Yes'
+
+    #
+    cmds.warning('开始批量处理...')
+    root_dir = cmds.fileDialog2(fileMode=3, dialogStyle=2)
+    if not root_dir:
+        cmds.warning('未选择文件')
+        return
+
+    warning_files = []
+    for root, dirs, files in os.walk(os.path.abspath(root_dir[0])):
+        for file in files:
+            if file.endswith('.ma'):
+                has_virus = kill_mayafile.check_file(os.path.join(root, file), is_cautious=is_cautious)
+                if has_virus:
+                    warning_files.append(os.path.join(root, file).replace('\\', '/'))
+
+    # show
+    if warning_files:
+        warning_text = '以下文件可能存在病毒代码:\n{}\n{}\n{}'.format(
+            '=' * 20,
+            '\n'.join(warning_files),
+            '=' * 20
+        )
+        cmds.warning(warning_text)
+    else:
+        cmds.warning('未发现病毒代码')
+
+
 def create_gui():
     # type: () -> None
     """
@@ -102,7 +146,8 @@ def create_gui():
     cmds.button(label='单独清除HIK病毒', command=lambda *args: alone_clear_hik_virus())
     cmds.button(label='恢复UAC设置', command=lambda *args: restore_UAC())
     cmds.button(label='清除病毒脚本节点', command=lambda *args: clear_virus_script_node())
-    cmds.button(label='批量清理Maya文件', command=lambda *args: batch_clear_maya_file())
+    cmds.button(label='批量清理Maya文件(.ma)', command=lambda *args: batch_clear_maya_file())
+    cmds.button(label='批量检查Maya文件(.ma)', command=lambda *args: batch_check_maya_file())
 
     cmds.showWindow('VirusKiller_240429')
 
