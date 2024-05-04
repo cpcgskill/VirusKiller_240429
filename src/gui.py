@@ -52,7 +52,7 @@ def clear_virus_script_node():
         cmds.warning('未发现病毒脚本节点')
 
 
-def batch_clear_maya_file():
+def batch_clear_maya_file_ma():
     """
     批量清理Maya文件.
     """
@@ -77,7 +77,42 @@ def batch_clear_maya_file():
         return
     for file in files:
         try:
-            kill_mayafile.process_file(os.path.abspath(file))
+            kill_mayafile.process_ma_file(os.path.abspath(file))
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            cmds.warning('处理文件{}失败: {}'.format(file, e))
+        else:
+            cmds.warning('处理文件{}成功'.format(file))
+    cmds.warning('批量处理完成')
+
+
+def batch_clear_maya_file_mb():
+    """
+    批量清理Maya文件.
+    """
+    # 弹窗警告
+    result = cmds.confirmDialog(
+        title='警告',
+        message='正则批量清理Maya文件, 可能会导致文件损坏, 请注意备份',
+        button=['Ok', 'Cancel'],
+        defaultButton='Cancel',
+        cancelButton='Cancel',
+        dismissString='Cancel',
+    )
+    if result == 'Cancel':
+        cmds.warning('已取消')
+        return
+
+    #
+    cmds.warning('开始批量处理...')
+    files = cmds.fileDialog2(fileMode=4, dialogStyle=2)
+    if not files:
+        cmds.warning('未选择文件')
+        return
+    for file in files:
+        try:
+            kill_mayafile.process_mb_file(os.path.abspath(file))
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -114,7 +149,13 @@ def batch_check_maya_file():
     for root, dirs, files in os.walk(os.path.abspath(root_dir[0])):
         for file in files:
             if file.endswith('.ma'):
-                has_virus = kill_mayafile.check_file(os.path.join(root, file), is_cautious=is_cautious)
+                cmds.warning('检查文件: {}'.format(os.path.join(root, file)))
+                has_virus = kill_mayafile.check_ma_file(os.path.join(root, file), is_cautious=is_cautious)
+                if has_virus:
+                    warning_files.append(os.path.join(root, file).replace('\\', '/'))
+            if file.endswith('.mb'):
+                cmds.warning('检查文件: {}'.format(os.path.join(root, file)))
+                has_virus = kill_mayafile.check_mb_file(os.path.join(root, file), is_cautious=is_cautious)
                 if has_virus:
                     warning_files.append(os.path.join(root, file).replace('\\', '/'))
 
@@ -146,8 +187,9 @@ def create_gui():
     cmds.button(label='单独清除HIK病毒', command=lambda *args: alone_clear_hik_virus())
     cmds.button(label='恢复UAC设置', command=lambda *args: restore_UAC())
     cmds.button(label='清除病毒脚本节点', command=lambda *args: clear_virus_script_node())
-    cmds.button(label='批量清理Maya文件(.ma)', command=lambda *args: batch_clear_maya_file())
-    cmds.button(label='批量检查Maya文件(.ma)', command=lambda *args: batch_check_maya_file())
+    cmds.button(label='批量清理Maya文件(.ma)', command=lambda *args: batch_clear_maya_file_ma())
+    cmds.button(label='批量清理Maya文件(.mb)', command=lambda *args: batch_clear_maya_file_mb())
+    cmds.button(label='批量检查Maya文件', command=lambda *args: batch_check_maya_file())
 
     cmds.showWindow('VirusKiller_240429')
 
