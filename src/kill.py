@@ -43,7 +43,9 @@ def kill_hik():
 
 
 def kill_virus():
-    user_setup_mel = cmds.internalVar(userAppDir=True) + '/scripts/userSetup.mel'
+    home_path = os.getenv('HOMEDRIVE') + os.getenv('HOMEPATH')
+    # user_setup_mel = cmds.internalVar(userAppDir=True) + '/scripts/userSetup.mel'
+    user_setup_mel = os.path.abspath(os.path.join(home_path, 'Documents', 'maya') + '/scripts/userSetup.mel').replace('\\', '/')
     if os.path.exists(user_setup_mel):
         with open(user_setup_mel, 'rb') as f:
             data = f.read()
